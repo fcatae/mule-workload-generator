@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 	<vm:config name="VM_Config" doc:name="VM Config" doc:id="b81d9ffe-79e2-4d25-9acb-9b2e93c184da" >
 		<vm:queues >
 			<vm:queue queueName="work" />
@@ -25,20 +26,32 @@ import sin,cos from dw::util::Math
 	<flow name="wait_flow" doc:id="fc9b3967-b432-4581-9fbd-a06471e50426" >
 		<foreach doc:name="For Each" doc:id="a2393f14-9e07-45ed-893a-cf456404c0ee">
 			<logger level="INFO" doc:name="Logger" doc:id="3cbe91a8-008a-4f0a-8cb0-9b3f219b4c05" message="#[payload]" />
-			<ee:transform doc:name="Transform Message" doc:id="41d348eb-98c9-415a-a102-9a19e65104a2">
-				<ee:message>
-					<ee:set-payload><![CDATA[%dw 2.0
-output application/java
-
-import * from dw::Runtime
+			<ee:transform doc:name="Set Payload with WAIT" doc:id="3a2ad5ef-18ff-4ba9-a4f9-76075d716480" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
 ---
-payload wait payload]]></ee:set-payload>
+{
+  "username": "test",
+  "password": "test"
+} dw::Runtime::wait payload]]></ee:set-payload>
 				</ee:message>
 			</ee:transform>
+			<http:request method="POST" doc:name="Request" doc:id="16ce2014-e40b-4136-a1bb-78debbbf54fc" url="http://exchange-api-proxy.us-e2.cloudhub.io/api/login">
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Accept" : "application/json",
+	"Content-Type" : "application/json"
+}]]]></http:headers>
+				<http:response-validator >
+					<http:success-status-code-validator values="200..499" />
+				</http:response-validator>
+			</http:request>
 		</foreach>
 	</flow>
 	<flow name="waitFlow" doc:id="a5940937-0266-4d5c-9017-f76a4083ea10" >
-		<scheduler doc:name="Scheduler" doc:id="2ef96faa-052c-44c4-80be-87d8a5c7c250" >
+		<scheduler doc:name="Scheduler Load" doc:id="2ef96faa-052c-44c4-80be-87d8a5c7c250" >
 			<scheduling-strategy >
 				<fixed-frequency frequency="60" timeUnit="MINUTES"/>
 			</scheduling-strategy>
