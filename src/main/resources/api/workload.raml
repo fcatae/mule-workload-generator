@@ -1,0 +1,13 @@
+#%RAML 1.0
+title: Workload API
+version: v1
+mediaType: [application/json]
+
+/run:
+  post: 
+    body:
+      example: [1,2,3,4]
+    responses:
+      200:
+        body:
+          example: { msg: 'done' }
