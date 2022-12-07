@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
     <http:listener-config name="workload-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8081" />
     </http:listener-config>
@@ -124,20 +124,9 @@ output application/json
         </error-handler>
     </flow>
     <flow name="post:\run:application\json:workload-config">
-        <foreach doc:name="For Each" doc:id="a2393f14-9e07-45ed-893a-cf456404c0ee" >
-			<ee:transform doc:name="Transform Message" doc:id="41d348eb-98c9-415a-a102-9a19e65104a2" >
-				<ee:message >
-					<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
-
-import * from dw::Runtime
----
-payload wait (100*payload)]]></ee:set-payload>
-				</ee:message>
-			</ee:transform>
-			<logger level="INFO" doc:name="Logger" doc:id="3cbe91a8-008a-4f0a-8cb0-9b3f219b4c05" message="#[payload]"/>
-		</foreach>
-		<ee:transform>
+        <set-variable value="#[attributes.queryParams.total default 100]" doc:name="Set Variable" doc:id="7478f005-f75f-4f63-999e-42e99016dfd0" variableName="total" />
+        <flow-ref doc:name="Flow Reference" doc:id="320ecdb3-0853-4ccf-a510-ef7b42b10e80" name="workload_generator" />
+        <ee:transform>
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
